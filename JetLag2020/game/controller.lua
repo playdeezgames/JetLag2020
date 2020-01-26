@@ -99,7 +99,6 @@ end
 
 local writeText = function (x,y,color,text)
 	for index = 1,string.len(text) do
-		print(string.byte(text,index))
 		updateCellForeground(x,y,getTileFromColorAndAscii(color,string.byte(text,index)))
 		x = x + 1
 	end
@@ -126,8 +125,9 @@ local updateScreen = function ()
 	end
 	updateScore()
 	if not inPlay then
-		writeText(math.floor((CELL_COLUMNS-12)/2),5,7,"'Z' to Start")
-	end
+		writeText(math.floor((CELL_COLUMNS-12)/2),5,5,"'Z' to Start")
+		writeText(math.floor((CELL_COLUMNS-20)/2),4,5,"Controls: Arrow Keys")
+		end
 end
 
 local setDirection = function (d)
