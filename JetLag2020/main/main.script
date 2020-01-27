@@ -2,6 +2,8 @@ local gameController = require("game.controller")
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
+	gameController.init()
+	controller.loadOptions()
 end
 
 function update(self, dt)
@@ -16,5 +18,7 @@ function on_input(self, action_id, action)
 		gameController.sendCommand("right")
 	elseif action_id == hash("green") then
 		gameController.sendCommand("green")
+	elseif action_id == hash("mute") and action.pressed then
+		gameController.toggleMute()
 	end
 end

@@ -15,6 +15,37 @@ local score = 0
 local inPlay = false
 local runCounter = 0
 local direction = 1
+local high_score = 0
+local saveFile = sys.get_save_file("JetLag2020", "options")
+
+local saveOptions = function()
+	local data = {}
+	data.masterGain = sound.get_group_gain("master")
+	data.highScore = high_score
+	sys.save(saveFile, data)
+end
+
+local loadOptions = function()
+	local data = sys.load(saveFile)
+	if data.masterGain ~= nil then
+		sound.set_group_gain("master", data.masterGain)
+	end
+	if data.highScore ~= nil then
+		high_score = data.highScore
+	else
+		high_score = 0
+	end
+end
+
+
+
+local getHighScore = function ()
+	return high_score
+end
+
+local setHighScore = function(highScore)
+	high_score = highScore
+end
 
 local resetBlocks = function ()
 	blocks = {}
@@ -75,6 +106,7 @@ local addFrameTime = function (dt)
 			scrollTail()
 			if tail[1]==blocks[1+TAIL_OFFSET] or tail[1]== 1 or tail[1] == CELL_COLUMNS then
 				inPlay = false
+				sound.play("#death")
 			end
 		end
 	end
@@ -90,6 +122,14 @@ local updateScore = function ()
 	end
 	temp = score
 	while x>1 do
+		local digit = temp % 10
+		temp = math.floor(temp/10)
+		updateCellForeground(x,y,getTileFromColorAndAscii(2,digit+48))
+		x = x - 1
+	end
+	x = CELL_COLUMNS - 1
+	temp = high_score
+	while x == (CELL_COLUMNS-1) or temp>0 do
 		local digit = temp % 10
 		temp = math.floor(temp/10)
 		updateCellForeground(x,y,getTileFromColorAndAscii(2,digit+48))
@@ -127,23 +167,26 @@ local updateScreen = function ()
 	if not inPlay then
 		writeText(math.floor((CELL_COLUMNS-12)/2),5,5,"'Z' to Start")
 		writeText(math.floor((CELL_COLUMNS-20)/2),4,5,"Controls: Arrow Keys")
-		end
+	end
 end
 
-local setDirection = function (d)
-	direction  = d
+local changeDirection = function (newDirection)
+	sound.play("#turn")
+	score = score + runCounter * (runCounter+1) / 2
+	if score > high_score then
+		high_score = score
+		saveOptions()
+	end
+	runCounter=0
+	direction = newDirection
 end
 
 local sendCommand = function (command)
 	if inPlay then
 		if command=="left" and direction~=-1 then
-			score = score + runCounter * (runCounter+1) / 2
-			runCounter=0
-			direction = -1
+			changeDirection(-1)
 		elseif command=="right" and direction~=1 then
-			score = score + runCounter * (runCounter+1) / 2
-			runCounter=0
-			direction = 1
+			changeDirection(1)
 		end
 	else
 		if command=="green" then
@@ -153,9 +196,22 @@ local sendCommand = function (command)
 	end
 end
 
+local toggleMute = function ()
+	local gain = sound.get_group_gain("master")
+	sound.set_group_gain("master", 1.0-gain)
+	saveOptions()
+end
+
+local init = function ()
+	sound.play("#bgm", nil)
+end
+
 controller.addFrameTime = addFrameTime
 controller.updateScreen = updateScreen
 controller.sendCommand = sendCommand
+controller.loadOptions = loadOptions
+controller.toggleMute = toggleMute
+controller.init = init
 
 reset()
 
