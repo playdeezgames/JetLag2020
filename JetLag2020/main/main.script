@@ -3,7 +3,7 @@ local gameController = require("game.controller")
 function init(self)
 	msg.post(".", "acquire_input_focus")
 	gameController.init()
-	controller.loadOptions()
+	gameController.loadOptions()
 end
 
 function update(self, dt)
