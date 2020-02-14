@@ -37,8 +37,6 @@ local loadOptions = function()
 	end
 end
 
-
-
 local getHighScore = function ()
 	return high_score
 end
